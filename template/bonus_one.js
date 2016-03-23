@@ -12,6 +12,55 @@
 // keyup events could be helpful to get value of field as the user types
 
 (function() {
-	// Magic!
-	console.log('Keepin\'n it clean with an external script!');
+	$(".results").hide();
+	var searchTerms = new Array();
+	
+	//Get searchTerms from json
+	$.ajax({
+		url: "http://www.mattbowytz.com/simple_api.json?data=all",
+		success: function(result) {
+			var arr = result["data"];
+			var interests = arr["interests"];
+			var programming = arr["programming"];
+			$.each(interests, function(index, value) {
+				searchTerms.push(value);
+			});
+			$.each(programming, function(index, value) {
+				searchTerms.push(value);
+			});
+		}
+	});
+	
+	//Called every time the text in the input is changed
+	$(".flexsearch-input").on("keyup", function() {
+		var searchText = $(this).val();
+		$(".results").empty();
+		
+		//If input feild is empty, then don't display search results
+		if (searchText.length == 0) {
+			$(".results").hide();
+			return;
+		}
+		
+		var found = 0;
+		//Check each search term
+		$.each(searchTerms, function(index, value) {
+			if (value.length >= searchText.length && value.substring(0, searchText.length).toLowerCase() == searchText.toLowerCase()) {
+				//Add text with link to google search
+				$(".results").append("<a href=\"https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=" 
+					+ value + "\"><p class=\"result\">" + value +"</p></a>");
+				found++;
+			}
+		});
+		
+		if (found > 0) {
+			$(".results").show();
+		}
+	});
+	
+	//On submit
+	$("#mainForm").on("submit", function(e) {
+		window.location = "https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=" + $(".flexsearch-input").val();
+		return false;//The search will not redirect without this return statement
+	});
 })();
